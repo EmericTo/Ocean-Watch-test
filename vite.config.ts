@@ -1,10 +1,19 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
+
+
   optimizeDeps: {
-    exclude: ['lucide-react', 'leaflet'],
+    exclude: ['lucide-react'],
+    include: ['leaflet'],
   },
+
+  resolve: {
+    alias: {
+      leaflet: 'leaflet/dist/leaflet-src.esm.js',
+    },
+  },
+
 });

@@ -18,17 +18,37 @@
  */
 import React, { useState, useEffect } from 'react';
 import { Filter, MapPin, Calendar, User, Eye } from 'lucide-react';
-import { getMockReports, MockReport } from '../lib/mockData';
+import { getMockReports, MockReport, deleteMockReport } from '../lib/mockData';
 import { DeleteReportModal } from '../components/dashboard/DeleteReportModal';
 import { InteractiveMap } from '../components/InteractiveMap';
 
 export const MapPage: React.FC = () => {
+  // Scroll to top on component mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const [selectedType, setSelectedType] = useState('all');
   const [selectedReport, setSelectedReport] = useState<MockReport | null>(null);
   const [reports, setReports] = useState<MockReport[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [reportToDelete, setReportToDelete] = useState<MockReport | null>(null);
+
+  const confirmDeleteReport = async () => {
+    if (!reportToDelete) return;
+    
+    try {
+      await deleteMockReport(reportToDelete.id);
+      setReports(prev => prev.filter(report => report.id !== reportToDelete.id));
+      if (selectedReport?.id === reportToDelete.id) {
+        setSelectedReport(null);
+      }
+      setReportToDelete(null);
+    } catch (err: any) {
+      setError(err.message || 'Erreur lors de la suppression');
+    }
+  };
 
   useEffect(() => {
     const fetchReports = async () => {
@@ -76,10 +96,6 @@ export const MapPage: React.FC = () => {
     ? reports 
     : reports.filter(report => report.type === selectedType);
 
-  function confirmDeleteReport(): void {
-    throw new Error('Function not implemented.');
-  }
-
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
@@ -94,7 +110,7 @@ export const MapPage: React.FC = () => {
 
         <div className="grid lg:grid-cols-4 gap-6">
           {/* Filters */}
-          <div className="lg:col-span-1">
+          <div className="lg:col-span-1 order-2 lg:order-1">
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
                 {error}
@@ -178,9 +194,9 @@ export const MapPage: React.FC = () => {
           </div>
 
           {/* Map */}
-          <div className="lg:col-span-3">
+          <div className="lg:col-span-3 order-1 lg:order-2">
             <div className="bg-white rounded-lg shadow-lg p-6">
-              <div className="h-[500px]">
+              <div className="h-[400px] md:h-[500px] lg:h-[600px]">
                 {loading ? (
                   <div className="h-full bg-gray-100 rounded-lg flex items-center justify-center">
                     <div className="text-center">
@@ -277,8 +293,7 @@ export const MapPage: React.FC = () => {
         isOpen={!!reportToDelete}
         onClose={() => setReportToDelete(null)}
         report={reportToDelete}
-        onConfirm={() => confirmDeleteReport()}
-
+        onConfirm={confirmDeleteReport}
       />
     </div>
   );

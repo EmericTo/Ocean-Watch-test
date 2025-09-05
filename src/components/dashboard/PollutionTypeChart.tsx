@@ -26,7 +26,6 @@ interface PollutionTypeChartProps {
 
 export const PollutionTypeChart: React.FC<PollutionTypeChartProps> = ({
   pollutionTypeData,
-  recentReports,
   onExportCSV
 }) => {
   const typeLabels: { [key: string]: { label: string; color: string; icon: string } } = {
@@ -52,7 +51,7 @@ export const PollutionTypeChart: React.FC<PollutionTypeChartProps> = ({
         </button>
       </div>
       
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
         {Object.entries(pollutionTypeData).map(([type, count]) => {
           const typeInfo = typeLabels[type];
           const percentage = total > 0 ? Math.round((count / total) * 100) : 0;

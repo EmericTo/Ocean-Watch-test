@@ -1,5 +1,5 @@
 /**
- * @fileoverview Page Dashboard 
+ * @fileoverview Dashboard de gestion interne pour les ONG
  * 
  * Cette page fournit une vue d'ensemble complète des signalements avec
  * statistiques, graphiques, gestion des équipes et exports de données.
@@ -34,6 +34,11 @@ interface Team {
 }
 
 export const DashboardPage: React.FC = () => {
+  // Scroll to top on component mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const [stats, setStats] = useState({
     total: 0,
     new: 0,
@@ -70,8 +75,8 @@ export const DashboardPage: React.FC = () => {
       contact: 'lacanau@surfrider.eu'
     },
     {
-      id: 'la rochelle',
-      name: 'Équipe La Rochelle',
+      id: 'oleron',
+      name: 'Équipe Oléron',
       members: 6,
       specialty: 'Surveillance',
       contact: 'oleron@surfrider.eu'
@@ -302,7 +307,7 @@ export const DashboardPage: React.FC = () => {
               <Bell className="h-8 w-8 text-sky-500" />
               <div>
                 <h3 className="font-semibold text-gray-800">Alertes Actions</h3>
-                <p className="text-sm text-gray-600">Mobilisation équipe</p>
+                <p className="text-sm text-gray-600">Mobilisation citoyenne</p>
               </div>
             </div>
           </div>
@@ -322,11 +327,13 @@ export const DashboardPage: React.FC = () => {
         <StatsGrid stats={stats} loading={loading} />
 
         {/* Pollution Type Chart */}
-        <PollutionTypeChart 
-          pollutionTypeData={pollutionTypeData}
-          recentReports={recentReports}
-          onExportCSV={handleExportCSV}
-        />
+        <div className="mb-8">
+          <PollutionTypeChart 
+            pollutionTypeData={pollutionTypeData}
+            recentReports={recentReports}
+            onExportCSV={handleExportCSV}
+          />
+        </div>
 
         {/* Actions entre graphique et signalements */}
         <div className="flex justify-center space-x-4 my-8">

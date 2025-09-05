@@ -67,30 +67,30 @@ export const ReportsTable: React.FC<ReportsTableProps> = ({
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
         </div>
       ) : (
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto -mx-6 px-6 md:mx-0 md:px-0">
           <table className="w-full">
             <thead>
               <tr className="border-b">
-                <th className="text-left p-2 text-sm font-medium text-gray-600">Type</th>
-                <th className="text-left p-2 text-sm font-medium text-gray-600">Localisation</th>
-                <th className="text-left p-2 text-sm font-medium text-gray-600">Date</th>
-                <th className="text-left p-2 text-sm font-medium text-gray-600">Statut</th>
-                <th className="text-left p-2 text-sm font-medium text-gray-600">Actions</th>
+                <th className="text-left p-2 text-xs md:text-sm font-medium text-gray-600 min-w-[120px]">Type</th>
+                <th className="text-left p-2 text-xs md:text-sm font-medium text-gray-600 min-w-[150px]">Localisation</th>
+                <th className="text-left p-2 text-xs md:text-sm font-medium text-gray-600 min-w-[100px]">Date</th>
+                <th className="text-left p-2 text-xs md:text-sm font-medium text-gray-600 min-w-[100px]">Statut</th>
+                <th className="text-left p-2 text-xs md:text-sm font-medium text-gray-600 min-w-[100px]">Actions</th>
               </tr>
             </thead>
             <tbody>
               {reports.map(report => (
                 <tr key={report.id} className="border-b hover:bg-gray-50">
-                  <td className="p-2 text-sm text-gray-800">{getTypeLabel(report.type)}</td>
-                  <td className="p-2 text-sm text-gray-800">{report.location_address}</td>
-                  <td className="p-2 text-sm text-gray-600">
+                  <td className="p-2 text-xs md:text-sm text-gray-800">{getTypeLabel(report.type)}</td>
+                  <td className="p-2 text-xs md:text-sm text-gray-800 max-w-[200px] truncate">{report.location_address}</td>
+                  <td className="p-2 text-xs md:text-sm text-gray-600">
                     {new Date(report.created_at).toLocaleDateString('fr-FR')}
                   </td>
                   <td className="p-2">
                     <select
                       value={report.status}
                       onChange={(e) => onStatusUpdate(report.id, e.target.value as MockReport['status'])}
-                      className={`px-2 py-1 rounded-full text-xs border-0 ${getStatusColor(report.status)}`}
+                      className={`px-2 py-1 rounded-full text-xs border-0 min-w-[80px] ${getStatusColor(report.status)}`}
                     >
                       <option value="new">Nouveau</option>
                       <option value="in-progress">En cours</option>
@@ -100,7 +100,7 @@ export const ReportsTable: React.FC<ReportsTableProps> = ({
                   <td className="p-2">
                     <button
                       onClick={() => onDeleteReport(report)}
-                      className="bg-red-600 hover:bg-red-700 text-white px-3 py-1 rounded text-xs transition-colors flex items-center space-x-1"
+                      className="bg-red-600 hover:bg-red-700 text-white px-2 md:px-3 py-1 rounded text-xs transition-colors flex items-center space-x-1"
                       title="Supprimer le signalement"
                     >
                       <Trash2 className="w-3 h-3" />

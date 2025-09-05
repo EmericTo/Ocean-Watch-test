@@ -15,7 +15,7 @@
  * @usage Utilisé dans App.tsx comme header global
  * @dependencies React Router pour la navigation, mockData pour le reset
  */
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { MapPin, Home, FileText, BarChart3, Menu, X } from 'lucide-react';
 
@@ -55,6 +55,7 @@ export function Navigation() {
                   <Link
                     key={item.id}
                     to={item.path}
+                    onClick={() => window.scrollTo(0, 0)}
                     className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                       isActive
                         ? 'bg-sky-50 text-sky-700 shadow-sm'
@@ -97,7 +98,10 @@ export function Navigation() {
                     <Link
                       key={item.id}
                       to={item.path}
-                      onClick={() => setIsMenuOpen(false)}
+                      onClick={() => {
+                        setIsMenuOpen(false);
+                        window.scrollTo(0, 0);
+                      }}
                       className={`w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition-colors ${
                         isActive
                           ? 'bg-sky-50 text-sky-700'

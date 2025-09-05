@@ -16,8 +16,8 @@
  * @usage Route "/report" dans App.tsx
  * @dependencies mockData pour la sauvegarde, Lucide React pour les icônes
  */
-import React, { useState } from 'react';
-import { Camera, MapPin, Send, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect } from 'react';
+import { Camera, Send} from 'lucide-react';
 import { createMockReport } from '../lib/mockData';
 
 // Fonction de géocodage avec Nominatim (OpenStreetMap)
@@ -69,6 +69,11 @@ const geocodeAddress = async (address: string): Promise<{ lat: number; lng: numb
 };
 
 export const ReportPage: React.FC = () => {
+  // Scroll to top on component mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const [formData, setFormData] = useState({
     type: '',
     description: '',
