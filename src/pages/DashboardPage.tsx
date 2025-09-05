@@ -24,6 +24,7 @@ import { PollutionTypeChart } from '../components/dashboard/PollutionTypeChart';
 import { ReportsTable } from '../components/dashboard/ReportsTable';
 import { DeleteReportModal } from '../components/dashboard/DeleteReportModal';
 import { TeamsManagement } from '../components/dashboard/TeamsManagement';
+import { getImage } from '../lib/imageStorage';
 
 interface Team {
   id: string;
@@ -89,6 +90,7 @@ export const DashboardPage: React.FC = () => {
       contact: 'urgence@surfrider.eu'
     }
   ]);
+  const [reportImages, setReportImages] = useState<{ [key: string]: string }>({});
 
   // Function to calculate stats from current reports
   const calculateStatsFromReports = (reports: MockReport[]) => {
@@ -136,6 +138,41 @@ export const DashboardPage: React.FC = () => {
 
     loadData();
   }, []);
+
+  // Load images for reports that have photo_key
+  useEffect(() => {
+    const loadReportImages = async () => {
+      const imagePromises = recentReports
+        .filter(report => report.photo_key)
+        .map(async (report) => {
+          if (report.photo_key) {
+            try {
+              const imageUrl = await getImage(report.photo_key);
+              return { reportId: report.id, imageUrl };
+            } catch (error) {
+              console.error('Erreur lors du chargement de l\'image:', error);
+              return { reportId: report.id, imageUrl: null };
+            }
+          }
+          return { reportId: report.id, imageUrl: null };
+        });
+
+      const results = await Promise.all(imagePromises);
+      const imageMap: { [key: string]: string } = {};
+      
+      results.forEach(({ reportId, imageUrl }) => {
+        if (imageUrl) {
+          imageMap[reportId] = imageUrl;
+        }
+      });
+      
+      setReportImages(imageMap);
+    };
+
+    if (recentReports.length > 0) {
+      loadReportImages();
+    }
+  }, [recentReports]);
 
   const handleStatusUpdate = async (reportId: string, newStatus: MockReport['status']) => {
     try {
@@ -351,6 +388,7 @@ export const DashboardPage: React.FC = () => {
           loading={loading}
           onStatusUpdate={handleStatusUpdate}
           onDeleteReport={handleDeleteReport}
+          reportImages={reportImages}
         />
         <DeleteReportModal
           isOpen={showDeleteModal}
