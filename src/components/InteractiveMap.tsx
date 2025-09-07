@@ -59,25 +59,32 @@ interface InteractiveMapProps {
   selectedReport: MockReport | null;
   onReportSelect: (report: MockReport) => void;
   filteredType: string;
+  filteredStatus?: string;
 }
 
 export const InteractiveMap: React.FC<InteractiveMapProps> = ({
   reports,
   selectedReport,
   onReportSelect,
-  filteredType
+  filteredType,
+  filteredStatus = 'all'
 }) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const mapInstanceRef = useRef<L.Map | null>(null);
   const markersRef = useRef<L.Marker[]>([]);
   const isMapInitialized = useRef(false);
 
-  // Filter reports based on selected type
-  const filteredReports = filteredType === 'all' 
-    ? reports 
-    : reports.filter(report => report.type === filteredType);
+  let filteredReports = reports;
+  
+  if (filteredType !== 'all') {
+    filteredReports = filteredReports.filter(report => report.type === filteredType);
+  }
+  
+  if (filteredStatus !== 'all') {
+    filteredReports = filteredReports.filter(report => report.status === filteredStatus);
+  }
 
-  // Create custom icon for each pollution type
+
   const createCustomIcon = (type: string, isSelected: boolean = false) => {
     const color = pollutionTypeColors[type as keyof typeof pollutionTypeColors];
     const size = isSelected ? 35 : 25;
@@ -113,11 +120,10 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
     });
   };
 
-  // Initialize map
+  
   useEffect(() => {
     if (!mapRef.current || mapInstanceRef.current || isMapInitialized.current) return;
 
-    // Create map centered on French Atlantic coast
     try {
       const map = L.map(mapRef.current, {
         preferCanvas: true,
@@ -125,7 +131,6 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
         attributionControl: true
       }).setView([44.5, -1.0], 8);
 
-      // Add OpenStreetMap tiles
       L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         maxZoom: 18
@@ -150,11 +155,9 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
     };
   }, []);
 
-  // Update markers when reports change
   useEffect(() => {
     if (!mapInstanceRef.current || !isMapInitialized.current) return;
 
-    // Clear existing markers
     markersRef.current.forEach(marker => {
       try {
         if (mapInstanceRef.current && marker) {
@@ -166,11 +169,9 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
     });
     markersRef.current = [];
 
-    // Add new markers
     filteredReports.forEach(report => {
       if (!mapInstanceRef.current || !isMapInitialized.current) return;
       
-      // Debug des coordonnées
       console.debug('Création marqueur pour:', report.location_address);
       console.debug('Coordonnées:', report.location_lat, report.location_lng, typeof report.location_lat, typeof report.location_lng);
       
@@ -192,7 +193,6 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
           icon: createCustomIcon(report.type, isSelected)
         });
 
-        // Create popup content
         const popupContent = `
           <div class="p-3 min-w-64">
             <div class="flex items-center justify-between mb-3">
@@ -234,7 +234,6 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
           className: 'custom-popup'
         });
 
-        // Handle marker click
         marker.on('click', () => {
           onReportSelect(report);
         });
@@ -248,7 +247,6 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
       }
     });
 
-    // Fit map to show all markers if there are any
     if (filteredReports.length > 0 && markersRef.current.length > 0 && mapInstanceRef.current) {
       try {
         const group = new L.FeatureGroup(markersRef.current);
@@ -262,7 +260,6 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
     }
   }, [filteredReports, selectedReport, onReportSelect]);
 
-  // Update marker styles when selection changes
   useEffect(() => {
     if (!mapInstanceRef.current || !isMapInitialized.current) return;
 
