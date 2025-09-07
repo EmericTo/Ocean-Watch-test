@@ -52,7 +52,9 @@ export const PollutionTypeChart: React.FC<PollutionTypeChartProps> = ({
       </div>
       
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-        {Object.entries(pollutionTypeData).map(([type, count]) => {
+        {Object.entries(pollutionTypeData)
+          .filter(([type]) => typeLabels[type]) // Filtrer seulement les types reconnus
+          .map(([type, count]) => {
           const typeInfo = typeLabels[type];
           const percentage = total > 0 ? Math.round((count / total) * 100) : 0;
           
