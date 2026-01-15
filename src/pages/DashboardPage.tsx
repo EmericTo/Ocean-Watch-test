@@ -1,5 +1,5 @@
 /**
- * @fileoverview Page Dashboard 
+ * @fileoverview Dashboard de gestion interne pour les ONG
  * 
  * Cette page fournit une vue d'ensemble complète des signalements avec
  * statistiques, graphiques, gestion des équipes et exports de données.
@@ -24,6 +24,7 @@ import { PollutionTypeChart } from '../components/dashboard/PollutionTypeChart';
 import { ReportsTable } from '../components/dashboard/ReportsTable';
 import { DeleteReportModal } from '../components/dashboard/DeleteReportModal';
 import { TeamsManagement } from '../components/dashboard/TeamsManagement';
+import { getImage } from '../lib/imageStorage';
 
 interface Team {
   id: string;
@@ -34,6 +35,11 @@ interface Team {
 }
 
 export const DashboardPage: React.FC = () => {
+  // Scroll to top on component mount
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
+
   const [stats, setStats] = useState({
     total: 0,
     new: 0,
@@ -70,8 +76,8 @@ export const DashboardPage: React.FC = () => {
       contact: 'lacanau@surfrider.eu'
     },
     {
-      id: 'la rochelle',
-      name: 'Équipe La Rochelle',
+      id: 'oleron',
+      name: 'Équipe Oléron',
       members: 6,
       specialty: 'Surveillance',
       contact: 'oleron@surfrider.eu'
@@ -84,6 +90,7 @@ export const DashboardPage: React.FC = () => {
       contact: 'urgence@surfrider.eu'
     }
   ]);
+  const [reportImages, setReportImages] = useState<{ [key: string]: string }>({});
 
   // Function to calculate stats from current reports
   const calculateStatsFromReports = (reports: MockReport[]) => {
@@ -131,6 +138,41 @@ export const DashboardPage: React.FC = () => {
 
     loadData();
   }, []);
+
+  // Load images for reports that have photo_key
+  useEffect(() => {
+    const loadReportImages = async () => {
+      const imagePromises = recentReports
+        .filter(report => report.photo_key)
+        .map(async (report) => {
+          if (report.photo_key) {
+            try {
+              const imageUrl = await getImage(report.photo_key);
+              return { reportId: report.id, imageUrl };
+            } catch (error) {
+              console.error('Erreur lors du chargement de l\'image:', error);
+              return { reportId: report.id, imageUrl: null };
+            }
+          }
+          return { reportId: report.id, imageUrl: null };
+        });
+
+      const results = await Promise.all(imagePromises);
+      const imageMap: { [key: string]: string } = {};
+      
+      results.forEach(({ reportId, imageUrl }) => {
+        if (imageUrl) {
+          imageMap[reportId] = imageUrl;
+        }
+      });
+      
+      setReportImages(imageMap);
+    };
+
+    if (recentReports.length > 0) {
+      loadReportImages();
+    }
+  }, [recentReports]);
 
   const handleStatusUpdate = async (reportId: string, newStatus: MockReport['status']) => {
     try {
@@ -302,7 +344,7 @@ export const DashboardPage: React.FC = () => {
               <Bell className="h-8 w-8 text-sky-500" />
               <div>
                 <h3 className="font-semibold text-gray-800">Alertes Actions</h3>
-                <p className="text-sm text-gray-600">Mobilisation équipe</p>
+                <p className="text-sm text-gray-600">Mobilisation citoyenne</p>
               </div>
             </div>
           </div>
@@ -322,11 +364,13 @@ export const DashboardPage: React.FC = () => {
         <StatsGrid stats={stats} loading={loading} />
 
         {/* Pollution Type Chart */}
-        <PollutionTypeChart 
-          pollutionTypeData={pollutionTypeData}
-          recentReports={recentReports}
-          onExportCSV={handleExportCSV}
-        />
+        <div className="mb-8">
+          <PollutionTypeChart 
+            pollutionTypeData={pollutionTypeData}
+            recentReports={recentReports}
+            onExportCSV={handleExportCSV}
+          />
+        </div>
 
         {/* Actions entre graphique et signalements */}
         <div className="flex justify-center space-x-4 my-8">
@@ -344,6 +388,7 @@ export const DashboardPage: React.FC = () => {
           loading={loading}
           onStatusUpdate={handleStatusUpdate}
           onDeleteReport={handleDeleteReport}
+          reportImages={reportImages}
         />
         <DeleteReportModal
           isOpen={showDeleteModal}

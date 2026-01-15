@@ -31,6 +31,7 @@ export interface MockReport {
   location_lng: number;
   location_address: string;
   photo_url?: string;
+  photo_key?: string;
   status: 'new' | 'in-progress' | 'resolved';
   created_at: string;
   updated_at: string;
@@ -108,7 +109,6 @@ const getDefaultReports = (): MockReport[] => [
   }
 ];
 
-// Load reports from localStorage or use default data
 const loadReportsFromStorage = (): MockReport[] => {
   try {
     const stored = localStorage.getItem(STORAGE_KEYS.REPORTS);
@@ -124,7 +124,6 @@ const loadReportsFromStorage = (): MockReport[] => {
   return getDefaultReports();
 };
 
-// Save reports to localStorage
 const saveReportsToStorage = (reports: MockReport[]) => {
   try {
     localStorage.setItem(STORAGE_KEYS.REPORTS, JSON.stringify(reports));
@@ -133,19 +132,17 @@ const saveReportsToStorage = (reports: MockReport[]) => {
   }
 };
 
-// Initialize reports from localStorage or default data
 let mockReports: MockReport[] = loadReportsFromStorage();
 
-// Helper functions for mock data
+
 export const getMockReports = async (filters?: {
   type?: MockReport['type'];
   status?: MockReport['status'];
   limit?: number;
 }) => {
-  // Simulate API delay
+  
   await new Promise(resolve => setTimeout(resolve, 500));
   
-  // Always get fresh data from storage
   mockReports = loadReportsFromStorage();
   
   let filteredReports = [...mockReports];
@@ -166,10 +163,8 @@ export const getMockReports = async (filters?: {
 };
 
 export const updateMockReportStatus = async (reportId: string, status: MockReport['status']) => {
-  // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 200));
   
-  // Load fresh data from storage
   mockReports = loadReportsFromStorage();
   
   const reportIndex = mockReports.findIndex(report => report.id === reportId);
@@ -177,7 +172,6 @@ export const updateMockReportStatus = async (reportId: string, status: MockRepor
     mockReports[reportIndex].status = status;
     mockReports[reportIndex].updated_at = new Date().toISOString();
     
-    // Save to localStorage
     saveReportsToStorage(mockReports);
     
     return mockReports[reportIndex];
@@ -186,10 +180,9 @@ export const updateMockReportStatus = async (reportId: string, status: MockRepor
 };
 
 export const deleteMockReport = async (reportId: string) => {
-  // Simulate API delay
   await new Promise(resolve => setTimeout(resolve, 300));
   
-  // Load fresh data from storage
+
   mockReports = loadReportsFromStorage();
   
   const reportIndex = mockReports.findIndex(report => report.id === reportId);
@@ -197,7 +190,6 @@ export const deleteMockReport = async (reportId: string) => {
     const deletedReport = mockReports[reportIndex];
     mockReports.splice(reportIndex, 1);
     
-    // Save to localStorage
     saveReportsToStorage(mockReports);
     
     return deletedReport;
@@ -212,8 +204,9 @@ export const createMockReport = async (reportData: {
   location_lng: number;
   location_address: string;
   photo_url?: string;
+  photo_key?: string;
 }) => {
-  // Simulate API delay
+
   await new Promise(resolve => setTimeout(resolve, 800));
   
   const newReport: MockReport = {
@@ -228,13 +221,12 @@ export const createMockReport = async (reportData: {
   
   mockReports.unshift(newReport);
   
-  // Save to localStorage
   saveReportsToStorage(mockReports);
   
   return newReport;
 };
 
-// Helper function to get pollution type distribution
+
 export const getPollutionTypeStats = async () => {
   await new Promise(resolve => setTimeout(resolve, 300));
   
@@ -255,23 +247,21 @@ export const getPollutionTypeStats = async () => {
   return typeStats;
 };
 
-// Helper function to get reports by month for chart
+
 export const getReportsByMonth = async () => {
   await new Promise(resolve => setTimeout(resolve, 300));
   
-  // Always get fresh data from storage
   const reports = loadReportsFromStorage();
   
-  // Group reports by month
+  
   const monthlyData: { [key: string]: number } = {};
   const months = ['Jan', 'Fév', 'Mar', 'Avr', 'Mai', 'Jun', 'Jul', 'Aoû', 'Sep', 'Oct', 'Nov', 'Déc'];
   
-  // Initialize all months with 0
+  
   months.forEach(month => {
     monthlyData[month] = 0;
   });
   
-  // Count reports by month
   reports.forEach(report => {
     const date = new Date(report.created_at);
     const monthIndex = date.getMonth();
@@ -282,13 +272,12 @@ export const getReportsByMonth = async () => {
   return monthlyData;
 };
 
-// Dynamic stats function with period support
 export const getDynamicReportStats = async (period: string = 'month') => {
   await new Promise(resolve => setTimeout(resolve, 300));
   
   const reports = loadReportsFromStorage();
   
-  // Calculate date ranges based on period
+  
   const now = new Date();
   let startDate: Date;
   let previousStartDate: Date;
@@ -296,14 +285,14 @@ export const getDynamicReportStats = async (period: string = 'month') => {
   
   switch (period) {
     case 'week':
-      // Current week (Monday to Sunday)
+      
       const dayOfWeek = now.getDay();
       const daysToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
       startDate = new Date(now);
       startDate.setDate(now.getDate() - daysToMonday);
       startDate.setHours(0, 0, 0, 0);
       
-      // Previous week
+      
       previousEndDate = new Date(startDate);
       previousEndDate.setDate(startDate.getDate() - 1);
       previousStartDate = new Date(previousEndDate);
@@ -311,11 +300,11 @@ export const getDynamicReportStats = async (period: string = 'month') => {
       break;
       
     case 'quarter':
-      // Current quarter
+      
       const currentQuarter = Math.floor(now.getMonth() / 3);
       startDate = new Date(now.getFullYear(), currentQuarter * 3, 1);
       
-      // Previous quarter
+      
       if (currentQuarter === 0) {
         previousStartDate = new Date(now.getFullYear() - 1, 9, 1); // Q4 of previous year
         previousEndDate = new Date(now.getFullYear() - 1, 11, 31);
@@ -326,10 +315,8 @@ export const getDynamicReportStats = async (period: string = 'month') => {
       break;
       
     case 'year':
-      // Current year
-      startDate = new Date(now.getFullYear(), 0, 1);
       
-      // Previous year
+      startDate = new Date(now.getFullYear(), 0, 1);
       previousStartDate = new Date(now.getFullYear() - 1, 0, 1);
       previousEndDate = new Date(now.getFullYear() - 1, 11, 31);
       break;
@@ -349,19 +336,16 @@ export const getDynamicReportStats = async (period: string = 'month') => {
       break;
   }
   
-  // Filter reports for current period
   const currentPeriodReports = reports.filter(report => {
     const reportDate = new Date(report.created_at);
     return reportDate >= startDate && reportDate <= now;
   });
   
-  // Filter reports for previous period
   const previousPeriodReports = reports.filter(report => {
     const reportDate = new Date(report.created_at);
     return reportDate >= previousStartDate && reportDate <= previousEndDate;
   });
   
-  // Calculate current period stats
   const currentStats = {
     total: currentPeriodReports.length,
     new: currentPeriodReports.filter(r => r.status === 'new').length,
@@ -369,7 +353,6 @@ export const getDynamicReportStats = async (period: string = 'month') => {
     inProgress: currentPeriodReports.filter(r => r.status === 'in-progress').length,
   };
   
-  // Calculate previous period stats for comparison
   const previousStats = {
     total: previousPeriodReports.length,
     new: previousPeriodReports.filter(r => r.status === 'new').length,
@@ -377,7 +360,6 @@ export const getDynamicReportStats = async (period: string = 'month') => {
     inProgress: previousPeriodReports.filter(r => r.status === 'in-progress').length,
   };
   
-  // Calculate weekly stats (always last 7 days for "Nouveaux cette semaine")
   const oneWeekAgo = new Date();
   oneWeekAgo.setDate(oneWeekAgo.getDate() - 7);
   const weeklyNewReports = reports.filter(report => {
@@ -391,7 +373,6 @@ export const getDynamicReportStats = async (period: string = 'month') => {
     resolved: currentStats.resolved,
     inProgress: currentStats.inProgress,
     weekly: weeklyNewReports,
-    // Add percentage changes
     totalChange: previousStats.total > 0 ? Math.round(((currentStats.total - previousStats.total) / previousStats.total) * 100) : 0,
     newChange: previousStats.new > 0 ? Math.round(((currentStats.new - previousStats.new) / previousStats.new) * 100) : 0,
     resolvedChange: previousStats.resolved > 0 ? Math.round(((currentStats.resolved - previousStats.resolved) / previousStats.resolved) * 100) : 0,
@@ -399,7 +380,6 @@ export const getDynamicReportStats = async (period: string = 'month') => {
   };
 };
 
-// Export function to reset data (useful for demo)
 export const resetMockData = () => {
   try {
     localStorage.removeItem(STORAGE_KEYS.REPORTS);
@@ -410,7 +390,6 @@ export const resetMockData = () => {
   }
 };
 
-// Export function to get current data count
 export const getDataInfo = () => {
   const stored = localStorage.getItem(STORAGE_KEYS.REPORTS);
   return {

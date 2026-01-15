@@ -17,8 +17,8 @@
  * @dependencies Leaflet, types MockReport
  */
 import React, { useEffect, useRef } from 'react';
-import * as L from 'leaflet/dist/leaflet-src.esm.js';
-import 'leaflet/dist/leaflet.css';
+import * as L from 'leaflet';
+import { MockReport } from '../lib/mockData';
 
 const pollutionTypeColors = {
   plastic: '#ef4444', // red-500
@@ -295,7 +295,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
       )}
 
       {/* Map legend */}
-      <div className="absolute bottom-4 left-4 bg-white rounded-lg shadow-lg p-3 z-1000">
+      <div className="absolute bottom-4 left-4 bg-white rounded-lg shadow-lg p-3" style={{ zIndex: 1000 }}>
         <h4 className="text-sm font-semibold text-gray-800 mb-2">Légende</h4>
         <div className="space-y-1">
           {Object.entries(pollutionTypeLabels).map(([type, label]) => (
@@ -311,7 +311,7 @@ export const InteractiveMap: React.FC<InteractiveMapProps> = ({
       </div>
 
       {/* Custom CSS for popups */}
-      <style jsx>{`
+      <style>{`
         .custom-popup .leaflet-popup-content-wrapper {
           border-radius: 8px;
           box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
