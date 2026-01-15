@@ -21,9 +21,10 @@ import { Filter, MapPin, Calendar, User, Eye } from 'lucide-react';
 import { getMockReports, MockReport, deleteMockReport } from '../lib/mockData';
 import { DeleteReportModal } from '../components/dashboard/DeleteReportModal';
 import { InteractiveMap } from '../components/InteractiveMap';
+import { getImage } from '../lib/imageStorage';
+import { ImagePreview } from '../components/ImagePreview';
 
 export const MapPage: React.FC = () => {
-  // Scroll to top on component mount
   useEffect(() => {
     window.scrollTo(0, 0);
   }, []);
@@ -34,6 +35,7 @@ export const MapPage: React.FC = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [reportToDelete, setReportToDelete] = useState<MockReport | null>(null);
+  const [selectedReportImage, setSelectedReportImage] = useState<string | null>(null);
 
   const confirmDeleteReport = async () => {
     if (!reportToDelete) return;
@@ -66,12 +68,31 @@ export const MapPage: React.FC = () => {
     fetchReports();
   }, []);
 
+  useEffect(() => {
+    const loadSelectedReportImage = async () => {
+      if (selectedReport?.photo_key) {
+        try {
+          const imageUrl = await getImage(selectedReport.photo_key);
+          setSelectedReportImage(imageUrl);
+        } catch (error) {
+          console.error('Erreur lors du chargement de l\'image:', error);
+          setSelectedReportImage(null);
+        }
+      } else {
+        setSelectedReportImage(null);
+      }
+    };
+
+    loadSelectedReportImage();
+  }, [selectedReport]);
+
   const pollutionTypes = [
-    { value: 'all', label: 'Tous types', color: 'bg-gray-500' },
-    { value: 'plastic', label: 'Déchets plastiques', color: 'bg-red-500' },
-    { value: 'hydrocarbons', label: 'Hydrocarbures', color: 'bg-orange-500' },
-    { value: 'organic', label: 'Déchets organiques', color: 'bg-green-500' },
-    { value: 'chemicals', label: 'Produits chimiques', color: 'bg-purple-500' }
+    { value: 'all', label: 'Tous types', color: 'bg-gray-500', count: reports.length },
+    { value: 'plastic', label: 'Déchets plastiques', color: 'bg-red-500', count: reports.filter(r => r.type === 'plastic').length },
+    { value: 'hydrocarbons', label: 'Hydrocarbures', color: 'bg-orange-500', count: reports.filter(r => r.type === 'hydrocarbons').length },
+    { value: 'organic', label: 'Déchets organiques', color: 'bg-green-500', count: reports.filter(r => r.type === 'organic').length },
+    { value: 'chemicals', label: 'Produits chimiques', color: 'bg-purple-500', count: reports.filter(r => r.type === 'chemicals').length },
+    { value: 'other', label: 'Autre', color: 'bg-gray-600', count: reports.filter(r => r.type === 'other').length }
   ];
 
   const getStatusColor = (status: string) => {
@@ -135,7 +156,10 @@ export const MapPage: React.FC = () => {
                       className="text-blue-600"
                     />
                     <div className={`w-3 h-3 rounded-full ${type.color}`}></div>
-                    <span className="text-sm text-gray-700">{type.label}</span>
+                    <span className="text-sm text-gray-700 flex-1">{type.label}</span>
+                    <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                      {type.count}
+                    </span>
                   </label>
                 ))}
               </div>
@@ -272,13 +296,15 @@ export const MapPage: React.FC = () => {
                   </p>
                 </div>
                 
-                {selectedReport.photo_url && (
+                {(selectedReportImage || selectedReport.photo_url) && (
                   <div className="mt-4">
                     <h4 className="text-sm font-medium text-gray-700 mb-2">Photo</h4>
-                    <img
-                      src={selectedReport.photo_url}
+                    <ImagePreview
+                      image={selectedReportImage || selectedReport.photo_url || null}
+                      showRemoveButton={false}
+                      showModifyButton={false}
                       alt="Photo du signalement"
-                      className="w-full max-w-md rounded-lg shadow-md"
+                      className="w-full max-w-md"
                     />
                   </div>
                 )}

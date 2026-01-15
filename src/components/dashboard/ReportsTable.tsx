@@ -20,21 +20,24 @@
  * @props onDeleteReport: callback pour suppression
  */
 import React from 'react';
-import { Trash2 } from 'lucide-react';
+import { Trash2, Image as ImageIcon } from 'lucide-react';
 import { MockReport } from '../../lib/mockData';
+import { ImagePreview } from '../ImagePreview';
 
 interface ReportsTableProps {
   reports: MockReport[];
   loading: boolean;
   onStatusUpdate: (reportId: string, status: MockReport['status']) => void;
   onDeleteReport: (report: MockReport) => void;
+  reportImages?: { [key: string]: string };
 }
 
 export const ReportsTable: React.FC<ReportsTableProps> = ({
   reports,
   loading,
   onStatusUpdate,
-  onDeleteReport
+  onDeleteReport,
+  reportImages = {}
 }) => {
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -74,6 +77,7 @@ export const ReportsTable: React.FC<ReportsTableProps> = ({
                 <th className="text-left p-2 text-xs md:text-sm font-medium text-gray-600 min-w-[120px]">Type</th>
                 <th className="text-left p-2 text-xs md:text-sm font-medium text-gray-600 min-w-[150px]">Localisation</th>
                 <th className="text-left p-2 text-xs md:text-sm font-medium text-gray-600 min-w-[100px]">Date</th>
+                <th className="text-left p-2 text-xs md:text-sm font-medium text-gray-600 min-w-[80px]">Photo</th>
                 <th className="text-left p-2 text-xs md:text-sm font-medium text-gray-600 min-w-[100px]">Statut</th>
                 <th className="text-left p-2 text-xs md:text-sm font-medium text-gray-600 min-w-[100px]">Actions</th>
               </tr>
@@ -85,6 +89,22 @@ export const ReportsTable: React.FC<ReportsTableProps> = ({
                   <td className="p-2 text-xs md:text-sm text-gray-800 max-w-[200px] truncate">{report.location_address}</td>
                   <td className="p-2 text-xs md:text-sm text-gray-600">
                     {new Date(report.created_at).toLocaleDateString('fr-FR')}
+                  </td>
+                  <td className="p-2">
+                    {(reportImages[report.id] || report.photo_url) ? (
+                      <div className="w-12 h-12 rounded overflow-hidden">
+                        <ImagePreview
+                          image={reportImages[report.id] || report.photo_url || null}
+                          showRemoveButton={false}
+                          showModifyButton={false}
+                          className="w-full h-full object-cover"
+                        />
+                      </div>
+                    ) : (
+                      <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center">
+                        <ImageIcon className="w-4 h-4 text-gray-400" />
+                      </div>
+                    )}
                   </td>
                   <td className="p-2">
                     <select
